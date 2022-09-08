@@ -2,6 +2,7 @@
 
 namespace App\lib;
 
+use Illuminate\Queue\Failed\NullFailedJobProvider;
 use Illuminate\Queue\QueueServiceProvider;
 
 class CustomerQueueServiceProvider extends QueueServiceProvider
@@ -44,6 +45,39 @@ class CustomerQueueServiceProvider extends QueueServiceProvider
         return new CustomerDatabaseUuidFailedJobProvider(
             $this->app['db'], $config['database'], $config['table']
         );
+    }
+
+
+
+    /**
+     * Register the failed job services.
+     *
+     * @return void
+     */
+    protected function registerFailedJobServices()
+    {
+        $this->app->singleton('queue.failer', function ($app) {
+            $config = $app['config']['queue.failed'];
+
+            if (array_key_exists('driver', $config) &&
+                (is_null($config['driver']) || $config['driver'] === 'null')) {
+                return new NullFailedJobProvider;
+            }
+
+            if (isset($config['driver']) && $config['driver'] === 'dynamodb') {
+                return $this->dynamoFailedJobProvider($config);
+            } elseif (isset($config['driver']) && $config['driver'] === 'database-uuids') {
+                $config['table'] = $app['config']['queue.connections']['customer']['failed_table'];
+                if(!$config['table']){
+                    throw new \RuntimeException("customer.queue.failed_table config error");
+                }
+                return $this->databaseUuidFailedJobProvider($config);
+            } elseif (isset($config['table'])) {
+                return $this->databaseFailedJobProvider($config);
+            } else {
+                return new NullFailedJobProvider;
+            }
+        });
     }
 
 

@@ -39,7 +39,8 @@ class CustomerDatabaseConnector implements ConnectorInterface
             $config['table'],
             $config['queue'],
             $config['retry_after'] ?? 60,
-            $config['after_commit'] ?? null
+            $config['after_commit'] ?? null,
+            $config['log_table']??''
         );
     }
 }

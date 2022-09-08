@@ -2,11 +2,13 @@
 
 namespace App\lib;
 
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Queue\Failed\DatabaseUuidFailedJobProvider;
 use Illuminate\Support\Facades\Date;
 
 class CustomerDatabaseUuidFailedJobProvider extends DatabaseUuidFailedJobProvider
 {
+
 
 
     /**
@@ -21,33 +23,21 @@ class CustomerDatabaseUuidFailedJobProvider extends DatabaseUuidFailedJobProvide
     public function log($connection, $queue, $payload, $exception)
     {
 
-        $payloadData = json_decode($payload, true);
-        $uuid = $payloadData['uuid'];
-        $data =  unserialize($payloadData['data']['command']??'');
-        if(is_object($data) ){
-            $job_name = $data->name?? '';
-            $key1 = $data->key1 ?? '';
-            $key2 = $data->key2 ?? '';
-        }else{
-            $job_name = $key1 = $key2 = '';
-        }
-
-
-
+        $payloadData = json_decode($payload);
 
         $this->getTable()->insert([
-            'uuid'       => $uuid,
+            'uuid'       => $payloadData->uuid,
             'connection' => $connection,
             'queue'      => $queue,
-            'job_name'   => $job_name,
-            'key1'       => $key1,
-            'key2'       => $key2,
+            'job_name'   => $payloadData->data->queueName,
+            'key1'       => $payloadData->data->key1,
+            'key2'       => $payloadData->data->key2,
             'payload'    => $payload,
             'exception'  => (string)mb_convert_encoding($exception, 'UTF-8'),
             'failed_at'  => Date::now(),
         ]);
 
-        return $uuid;
+        return $payloadData->uuid;
     }
 
 }
