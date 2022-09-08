@@ -2,7 +2,7 @@
 laravel 数据库队列扩展,数据表额外增加自定义任务名称,关键字key1,key2方便搜索,更改job的release方式,由之前的删除后再插入更改为update by  job id
 
 1.将lib 复制到app文件夹下面
-2.config/app.php providers下面 注释掉 Illuminate\Queue\CustomerQueueServiceProvider::class这行,添加\App\lib\CustomerQueueServiceProvider::class,
+2.config/app.php providers下面 注释掉 Illuminate\Queue\QueueServiceProvider::class这行,添加\App\lib\CustomerQueueServiceProvider::class,
 ![image](https://user-images.githubusercontent.com/20874631/169750671-e94b4502-5d3a-4f19-85e6-3df54f3794a7.png)
 3.config/queue.php的connections下面添加
 ```
